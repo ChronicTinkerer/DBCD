@@ -22,6 +22,7 @@ namespace DBCD.IO.Readers
         public int RecordId => m_hotfixEntry.RecordId;
         public bool IsValid => m_hotfixEntry.IsValid;
         public int DataSize => m_hotfixEntry.DataSize;
+        public RecordState State => m_hotfixEntry.State;
 
         public HTFXRow(BitReader data, IHotfixEntry hotfixEntry)
         {
@@ -131,7 +132,7 @@ namespace DBCD.IO.Readers
                 hash = (hash * 486187739) + PushId;
                 hash = (hash * 486187739) + TableHash.GetHashCode();
                 hash = (hash * 486187739) + RecordId;
-                hash = (hash * 486187739) + (IsValid ? 1 : 0);
+                hash = (hash * 486187739) + State.GetHashCode();
                 hash = (hash * 486187739) + DataSize;
                 hash = (hash * 486187739) + m_data.GetHashCode();
                 return hash;
@@ -143,7 +144,7 @@ namespace DBCD.IO.Readers
             return PushId == other.PushId &&
                    TableHash == other.TableHash &&
                    RecordId == other.RecordId &&
-                   IsValid == other.IsValid &&
+                   State == other.State &&
                    DataSize == other.DataSize;
         }
 
@@ -201,11 +202,11 @@ namespace DBCD.IO.Readers
 
                     var dataSize = reader.ReadInt32();
 
-                    if(reader.BaseStream.Length > reader.BaseStream.Position + 4 + dataSize)
+                    if (reader.BaseStream.Length > reader.BaseStream.Position + 4 + dataSize)
                         reader.BaseStream.Position += 4 + dataSize; // Skip ahead by 4 bytes + size of hotfix data
 
                     // Check if we encounter a hotfix signature in the next hotfix record (if exists)
-                    if(reader.BaseStream.Length > reader.BaseStream.Position + 4)
+                    if (reader.BaseStream.Length > reader.BaseStream.Position + 4)
                     {
                         if (reader.ReadUInt32() != HTFXFmtSig)
                         {
@@ -213,7 +214,7 @@ namespace DBCD.IO.Readers
                             Version = 7;
                         }
                     }
-                        
+
                     // Go back to pre-detection position
                     reader.BaseStream.Position = prePos;
                 }
@@ -267,7 +268,7 @@ namespace DBCD.IO.Readers
                 hotfixType = typeof(HotfixEntryV1);
             else if (Version >= 2 && Version <= 6)
                 hotfixType = typeof(HotfixEntryV2);
-            else if (Version == 7) 
+            else if (Version == 7)
                 hotfixType = typeof(HotfixEntryV7);
             else if (Version == 8)
                 hotfixType = typeof(HotfixEntryV8);

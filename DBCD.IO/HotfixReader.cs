@@ -85,7 +85,7 @@ namespace DBCD.IO
             // Example situation: Blizzard has invalidated TACTKey records in the same DBCache as valid ones.
             // Without the below check, valid cached TACTKey records would be removed by the invalidated records afterwards.
             // This only seems to be relevant for cached tables and specifically TACTKey, BroadcastText/ItemSparse only show up single times it seems.
-            var shouldDelete = (parser.TableHash != 3744420815 && parser.TableHash != 35137211) || !records.Any(r => r.IsValid && r.PushId == -1 && r.DataSize > 0);
+            var shouldDelete = (parser.TableHash != 3744420815 && parser.TableHash != 35137211) || !records.Any(r => r.State == RecordState.Valid && r.PushId == -1 && r.DataSize > 0);
 
             foreach (var row in records)
             {
@@ -106,8 +106,10 @@ namespace DBCD.IO
 
         public static RowOp DefaultProcessor(IHotfixEntry row, bool shouldDelete)
         {
-            if (row.IsValid & row.DataSize > 0)
+            if (row.State == RecordState.Valid & row.DataSize > 0)
                 return RowOp.Add;
+            else if (row.State == RecordState.NotPublic) // These seem to be ignored
+                return RowOp.Ignore;
             else if (shouldDelete)
                 return RowOp.Delete;
             else

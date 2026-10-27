@@ -4,6 +4,15 @@ using System.Runtime.InteropServices;
 
 namespace DBCD.IO.Common
 {
+    public enum RecordState : byte
+    {
+        NotSet,
+        Valid,
+        Delete,
+        Invalid,
+        NotPublic
+    }
+
     public interface IHotfixEntry
     {
         int PushId { get; }
@@ -11,6 +20,7 @@ namespace DBCD.IO.Common
         uint TableHash { get; }
         int RecordId { get; }
         bool IsValid { get; }
+        RecordState State { get; }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -21,8 +31,9 @@ namespace DBCD.IO.Common
         public uint TableHash { get; }
         public int RecordId { get; }
         public bool IsValid { get; }
-
         private readonly byte pad1, pad2, pad3;
+
+        public RecordState State => IsValid ? RecordState.Valid : RecordState.Invalid;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -34,8 +45,9 @@ namespace DBCD.IO.Common
         public uint TableHash { get; }
         public int RecordId { get; }
         public bool IsValid { get; }
-
         private readonly byte pad1, pad2, pad3;
+
+        public RecordState State => IsValid ? RecordState.Valid : RecordState.Invalid;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -45,9 +57,10 @@ namespace DBCD.IO.Common
         public uint TableHash { get; }
         public int RecordId { get; }
         public int DataSize { get; }
-        public bool IsValid => op == 1;
-
         private readonly byte op, pad1, pad2, pad3;
+
+        public bool IsValid => op == 1;
+        public RecordState State => (RecordState)op;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -58,9 +71,10 @@ namespace DBCD.IO.Common
         public uint TableHash { get; }
         public int RecordId { get; }
         public int DataSize { get; }
-        public bool IsValid => op == 1;
-
         private readonly byte op, pad1, pad2, pad3;
+
+        public bool IsValid => op == 1;
+        public RecordState State => (RecordState)op;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -72,8 +86,9 @@ namespace DBCD.IO.Common
         public uint TableHash { get; }
         public int RecordId { get; }
         public int DataSize { get; }
-        public bool IsValid => op == 1;
-
         private readonly byte op, pad1, pad2, pad3;
+
+        public bool IsValid => op == 1;
+        public RecordState State => (RecordState)op;
     }
 }
